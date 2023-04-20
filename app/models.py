@@ -21,7 +21,7 @@ class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
-    default = db.Column(db.Boolean, default=False, index=True)
+    is_default = db.Column(db.Boolean, default=False, index=True)
     permissions = db.Column(db.Integer)
     users = db.relationship('User', backref='role', lazy='dynamic')
 
@@ -42,7 +42,7 @@ class Role(db.Model):
             if role is None:
                 role = Role(name=r)
             role.permissions = roles[r][0]
-            role.default = roles[r][1]
+            role.is_default = roles[r][1]
             db.session.add(role)
         db.session.commit()
 
@@ -205,15 +205,15 @@ class User(UserMixin, db.Model):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
-    def gravatar(self, size=100, default='identicon', rating='g'):
+    def gravatar(self, size=100, is_default='identicon', rating='g'):
         if request.is_secure:
             url = 'https://secure.gravatar.com/avatar'
         else:
             url = 'http://www.gravatar.com/avatar'
         hash = self.avatar_hash or hashlib.md5(
             self.email.encode('utf-8')).hexdigest()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hash, size=size, default=default, rating=rating)
+        return '{url}/{hash}?s={size}&d={is_default}&r={rating}'.format(
+            url=url, hash=hash, size=size, is_default=is_default, rating=rating)
 
     def follow(self, user):
         if not self.is_following(user):
